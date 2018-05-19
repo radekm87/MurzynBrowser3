@@ -82,13 +82,17 @@ public class MurzynMainActivity extends AppCompatActivity {
         webSettings.setLoadsImagesAutomatically(true);
         browser.loadUrl("http://192.168.1.24:8080/Murzynek2/");
     }
+    private void reloadUrlToBrowser(WebView browser){
+        // browser.reload();
+        browser.loadUrl( "javascript:window.location.reload( true )" );
+    }
 
     private void runHandlerCurrentTime() {
         currentTimeHandler.postDelayed(CurrentTimeCharger, 300000); //5min
     }
 
     private void runHandlerReloadPage() {
-        currentTimeHandler.postDelayed(ReloadPageTimer, 18000000); //300min tj 5h
+        currentTimeHandler.postDelayed(ReloadPageTimer, 9000000); //150min tj 2,5h
     }
 
     /**
@@ -117,7 +121,7 @@ public class MurzynMainActivity extends AppCompatActivity {
         @Override
         public void run() {
             WebView browser = (WebView) findViewById(R.id.webView);
-            loadUrlToBrowser(browser);
+            reloadUrlToBrowser(browser);
             runHandlerReloadPage();
         }
     };
@@ -147,13 +151,13 @@ public class MurzynMainActivity extends AppCompatActivity {
         }
     };
 
-    private void toggle() {
-        if (mVisible) {
-            hide();
-        } else {
-            show();
-        }
-    }
+//    private void toggle() {
+//        if (mVisible) {
+//            hide();
+//        } else {
+//            show();
+//        }
+//    }
 
     private void hide() {
         // Hide UI first
@@ -162,6 +166,19 @@ public class MurzynMainActivity extends AppCompatActivity {
             actionBar.hide();
         }
         mControlsView.setVisibility(View.GONE);
+
+        //---------
+        View decorView = getWindow().getDecorView();
+        // Hide both the navigation bar and the status bar.
+        // SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+        // a general rule, you should design your app to hide the status bar whenever you
+        // hide the navigation bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+        //---------
+
+
         mVisible = false;
 
         // Schedule a runnable to remove the status and navigation bar after a delay
@@ -173,6 +190,7 @@ public class MurzynMainActivity extends AppCompatActivity {
         @SuppressLint("InlinedApi")
         @Override
         public void run() {
+            mHideHandler.postDelayed(mHideRunnable, 5000);
             // Delayed removal of status and navigation bar
 
             // Note that some of these constants are new as of API 16 (Jelly Bean)
