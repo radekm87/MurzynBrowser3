@@ -5,11 +5,13 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import java.util.Calendar;
 
@@ -56,7 +58,7 @@ public class MurzynMainActivity extends AppCompatActivity {
         mControlsView = findViewById(R.id.fullscreen_content_controls);
 
         runHandlerCurrentTime();
-        runHandlerReloadPage();
+//        runHandlerReloadPage();
 //        mContentView = findViewById(R.id.fullscreen_content);
 //
 //        // Set up the user interaction to manually show or hide the system UI.
@@ -73,6 +75,7 @@ public class MurzynMainActivity extends AppCompatActivity {
 //        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
 
         WebView browser = (WebView) findViewById(R.id.webView);
+        Log.i("Murzyn","onCreate Aplikacji MurzynBrowser3" );
         loadUrlToBrowser(browser);
     }
 
@@ -80,11 +83,58 @@ public class MurzynMainActivity extends AppCompatActivity {
         WebSettings webSettings = browser.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadsImagesAutomatically(true);
-        browser.loadUrl("http://192.168.1.24:8080/Murzynek2/");
+
+        browser.loadUrl("http://192.168.1.24:8088/Murzynek2/");
+
+        browser.setWebViewClient(new WebViewClient(){
+           public void onReceivedError(WebView view, int errorCode, String desc, String url){
+               Log.e("Murzyn","Blad browsera (ladowania strony) " + errorCode + ", " + desc);
+               view.loadUrl("file:///android_asset/error.html");
+               runHandlerReloadPage();
+           }
+        }
+        );
     }
     private void reloadUrlToBrowser(WebView browser){
-        // browser.reload();
-        browser.loadUrl( "javascript:window.location.reload( true )" );
+        Log.i("Murzyn","Handler mnie wywolal i odswiezam strone ");
+
+        browser.stopLoading();
+        // Make sure you remove the WebView from its parent view before doing anything.
+        browser.removeAllViews();
+
+        browser.clearHistory();
+
+        // NOTE: clears RAM cache, if you pass true, it will also clear the disk cache.
+        // Probably not a great idea to pass true if you have other WebViews still alive.
+        browser.clearCache(true);
+
+        // Loading a blank page is optional, but will ensure that the WebView isn't doing anything when you destroy it.
+        browser.loadUrl("about:blank");
+        browser.reload();
+//        browser.onPause();
+//        browser.removeAllViews();
+//        browser.destroyDrawingCache();
+
+        // NOTE: This pauses JavaScript execution for ALL WebViews,
+        // do not use if you have other WebViews still alive.
+        // If you create another WebView after calling this,
+        // make sure to call mWebView.resumeTimers().
+//        browser.pauseTimers();
+
+        // NOTE: This can occasionally cause a segfault below API 17 (4.2)
+
+
+        browser.loadUrl("http://192.168.1.24:8088/Murzynek2/");
+        browser.setWebViewClient(new WebViewClient(){
+                                     public void onReceivedError(WebView view, int errorCode, String desc, String url){
+                                         Log.e("Murzyn","Blad browsera (ladowania strony) " + errorCode + ", " + desc);
+                                         view.loadUrl("file:///android_asset/error.html");
+                                         runHandlerReloadPage();
+                                     }
+                                 });
+//        browser.reload();
+//        browser.loadUrl( "javascript:window.location.reload( true )" );
+
     }
 
     private void runHandlerCurrentTime() {
@@ -92,7 +142,8 @@ public class MurzynMainActivity extends AppCompatActivity {
     }
 
     private void runHandlerReloadPage() {
-        currentTimeHandler.postDelayed(ReloadPageTimer, 9000000); //150min tj 2,5h
+        Log.i("Murzyn", "Wchodze w wywolanie handlera odswiezenia strony za minute");
+        currentTimeHandler.postDelayed(ReloadPageTimer, 60000); //1minuta
     }
 
     /**
@@ -122,7 +173,7 @@ public class MurzynMainActivity extends AppCompatActivity {
         public void run() {
             WebView browser = (WebView) findViewById(R.id.webView);
             reloadUrlToBrowser(browser);
-            runHandlerReloadPage();
+//            runHandlerReloadPage();
         }
     };
 
